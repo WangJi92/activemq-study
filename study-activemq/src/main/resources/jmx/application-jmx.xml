@@ -28,8 +28,19 @@
         <property name="connectionFactory" ref="jmsFactory"></property>
         <!--默认目的地的名称-->
         <property name="defaultDestinationName" value="subject" />
-        <!--<property name="deliveryMode" value="2"></property>DeliveryMode类中配置是否持久-->
+        <property name="deliveryMode" ref="DeliveryMode.PERSISTENT"></property><!--DeliveryMode类中配置是否持久-->
     </bean>
+    <!--FieldRetrievingFactoryBean用于获取Field值，使用该工厂Bean类可以获取类的静态Field或者对象的实例Field值，FieldRetrievingFactoryBean获得指定的Field值之后，就可以获取将获取的值注入到其他的Bean中，也可以直接定义成新的Bean。-->
+ <!--   获取静态Field：
+    1>调用哪个类:targetClass
+    2>访问哪个Field:targetField
+    获取实例Field：
+    1>调用哪个对象:targetObject
+    2>访问哪个Field:targetField-->
+    <bean id="DeliveryMode.PERSISTENT" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+        <property name="staticField" value="javax.jms.DeliveryMode.PERSISTENT"/>
+    </bean>
+
 
     <bean id="destination" class="org.apache.activemq.command.ActiveMQTopic">
         <constructor-arg index="0" value="subject" />
