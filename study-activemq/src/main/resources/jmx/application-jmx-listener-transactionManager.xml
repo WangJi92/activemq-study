@@ -1,0 +1,68 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <!-- 配置connectionFactory -->
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL" value="tcp://127.0.0.1:61616"></property>
+                <property name="userName" value="admin"></property>
+                <property name="password" value="admin"></property>
+            </bean>
+        </property>
+        <property name="maxConnections" value="100"></property>
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"></property>
+        <!--默认目的地的名称-->
+        <property name="defaultDestinationName" value="subject" />
+        <!-- 区别它采用的模式为false是点对点，为true是订阅 -->
+        <!--<property name="pubSubDomain" value="true" />-->
+        <property name="messageConverter" ref="simpleMessageConverter"></property><!--使用convetandSend-->
+    </bean>
+    <bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+        <!-- 设置消息队列的名字 -->
+        <constructor-arg index="0" value="subject" />
+    </bean>
+ <!--   http://elim.iteye.com/blog/1893038-->
+<!--    在ActiveMQ中实现了两种类型的Destination，一个是点对点的ActiveMQQueue，另一个就是支持订阅/发布模式的ActiveMQTopic-->
+
+    <bean id="wangjiqueue" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg index="0" value="wangji"></constructor-arg>
+    </bean>
+
+    <!-- 消息监听适配器 -->
+    <bean id="messageListenerAdapter" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <property name="delegate">
+            <bean class="activemqspring.SpringReceiverAdapterLinstenerTransactionManager"/>
+        </property>
+        <property name="defaultListenerMethod" value="receiveMessage"/>
+    </bean>
+    <bean id="simpleMessageConverter" class="org.springframework.jms.support.converter.SimpleMessageConverter"></bean>
+    <bean id="messageListenerAdapterContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="destination" />
+        <property name="messageListener" ref="messageListenerAdapter" />
+        <property name="messageConverter" ref="simpleMessageConverter"></property><!--(默认的消息转换器)-->
+        <property name="concurrentConsumers" value="1" /><!-- 控制同时启几个concurrent listener threads,比如队列消息一个阻塞了，另一个可以继续-->
+        <property name="transactionManager" ref="jmsTransactionManager" />
+        <property name="sessionTransacted" value="true" />
+       <!-- http://blog.csdn.net/chh_jiang/article/details/6707764-->
+    </bean>
+
+    <bean id="jmsTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
+</beans>
