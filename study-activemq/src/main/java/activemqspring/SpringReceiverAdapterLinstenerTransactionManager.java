@@ -17,6 +17,11 @@ public class SpringReceiverAdapterLinstenerTransactionManager {
        /* 消息转换器自动识别接收消息的类型，然后进行相应的转换*/
         System.out.println("ConsumerListener通过receiveMessage接收到一个纯文本消息，消息内容是：" + message);
         // http://blog.csdn.net/lsm135/article/details/74945116 出现6次异常之后就被消费不可回滚。
+        try {
+            Thread.sleep(100000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         throw new RuntimeException("出现异常");
     }
 
