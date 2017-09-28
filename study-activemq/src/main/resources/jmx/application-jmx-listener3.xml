@@ -29,8 +29,9 @@
         <property name="defaultDestinationName" value="subject" />
         <!-- 区别它采用的模式为false是点对点，为true是订阅 -->
         <!--<property name="pubSubDomain" value="true" />-->
+        <property name="messageConverter" ref="simpleMessageConverter"></property><!--使用convetandSend-->
     </bean>
-    <bean id="destination" class="org.apache.activemq.command.ActiveMQTopic">
+    <bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
         <!-- 设置消息队列的名字 -->
         <constructor-arg index="0" value="subject" />
     </bean>
@@ -40,14 +41,20 @@
     <bean id="wangjiqueue" class="org.apache.activemq.command.ActiveMQQueue">
         <constructor-arg index="0" value="wangji"></constructor-arg>
     </bean>
-    <!-- 可以获取session的MessageListener,发送的目的地是，通过操作基本API实现-->
-    <bean id="consumerSessionAwareMessageListener" class="activemqspring.SpringReceiverSessionAwareMessageListener">
-        <property name="destination" ref="wangjiqueue"/>
+
+    <!-- 消息监听适配器 -->
+    <bean id="messageListenerAdapter" class="org.springframework.jms.listener.adapter.MessageListenerAdapter">
+        <property name="delegate">
+            <bean class="activemqspring.SpringReceiverAdapterLinstener"/>
+        </property>
+        <property name="defaultListenerMethod" value="receiveMessage"/>
     </bean>
-    <bean id="sessionAwareListenerContainer"
+    <bean id="simpleMessageConverter" class="org.springframework.jms.support.converter.SimpleMessageConverter"></bean>
+    <bean id="messageListenerAdapterContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="destination" ref="destination" />
-        <property name="messageListener" ref="consumerSessionAwareMessageListener" />
+        <property name="messageListener" ref="messageListenerAdapter" />
+        <property name="messageConverter" ref="simpleMessageConverter"></property><!--(默认的消息转换器)-->
     </bean>
 </beans>
