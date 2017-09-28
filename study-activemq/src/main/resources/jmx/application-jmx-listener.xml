@@ -11,7 +11,7 @@
 		http://www.springframework.org/schema/tx
 		http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
 
-    <!-- 配置connectionFactory CachingConnectionFactory,SingleConnectionFactory -->
+    <!-- 配置connectionFactory -->
     <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
         <property name="connectionFactory">
             <bean class="org.apache.activemq.ActiveMQConnectionFactory">
@@ -28,23 +28,24 @@
         <property name="connectionFactory" ref="jmsFactory"></property>
         <!--默认目的地的名称-->
         <property name="defaultDestinationName" value="subject" />
-        <property name="deliveryMode" ref="DeliveryMode.PERSISTENT"></property><!--DeliveryMode类中配置是否持久-->
+        <property name="pubSubDomain" value="true"></property>
+        <!--JmsDestinationAccessor中创建Destination使用默认的创建哪种类型的队列的名称，true-topic-->
     </bean>
-    <!--FieldRetrievingFactoryBean用于获取Field值，使用该工厂Bean类可以获取类的静态Field或者对象的实例Field值，FieldRetrievingFactoryBean获得指定的Field值之后，就可以获取将获取的值注入到其他的Bean中，也可以直接定义成新的Bean。-->
- <!--   获取静态Field：
-    1>调用哪个类:targetClass
-    2>访问哪个Field:targetField
-    获取实例Field：
-    1>调用哪个对象:targetObject
-    2>访问哪个Field:targetField-->
-    <bean id="DeliveryMode.PERSISTENT" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
-        <property name="staticField" value="javax.jms.DeliveryMode.PERSISTENT"/>
-    </bean>
-
-
     <bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+        <!-- 设置消息队列的名字 -->
         <constructor-arg index="0" value="subject" />
     </bean>
  <!--   http://elim.iteye.com/blog/1893038-->
 <!--    在ActiveMQ中实现了两种类型的Destination，一个是点对点的ActiveMQQueue，另一个就是支持订阅/发布模式的ActiveMQTopic-->
+
+    <!--这个是自己定义的接受者-->
+    <bean id="consumerMessageListener" class="activemqspring.SpringReceiveLinstener"/>
+    <!-- 消息监听容器 -->
+    <bean id="jmsContainer"  class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="destination" ref="destination" />
+        <property name="messageListener" ref="consumerMessageListener" />
+    </bean>
+
+
 </beans>
