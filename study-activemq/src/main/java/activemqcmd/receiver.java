@@ -36,6 +36,7 @@ public class receiver {
                     Session.AUTO_ACKNOWLEDGE);
             destination = session.createQueue("FirstQueue");
             consumer = session.createConsumer(destination);
+            //consumer.setMessageListener(new SpringReceiveLinstener());
             while (true) {
                 //设置接收者接收消息的时间
                 TextMessage message = (TextMessage) consumer.receive(100000);

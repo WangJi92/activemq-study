@@ -56,5 +56,23 @@
         <property name="destination" ref="destination" />
         <property name="messageListener" ref="messageListenerAdapter" />
         <property name="messageConverter" ref="simpleMessageConverter"></property><!--(默认的消息转换器)-->
+       <!-- <property name="messageSelector" ref=""></property>--><!--消息选择器可以用来区分不同的消息-->
+      <!--  http://blog.csdn.net/helongzhong/article/details/63253392
+        http://www.cnblogs.com/wangjian1990/p/6689703.html-->
+    <!--    sessionAcknowledgeMode: ACK MODE,默认为AUTO。spring-jms做了一件非常遗憾的事情，
+        如果指定了sessionTransacted为true，那么在调用listener.onMessage()方法之后，则会立即提交事务(session.commit())
+        ，即使开发者使用了sessionAwareMessageListener，所以开发者无法实现基于事务的“批量”确认机制。
+        如果开发者指定为CLIENT_ACK，那么spring-JMS将会在onMessage方法返回后立即调用message.acknowlege()方法，
+        所以开发者自己是否确认以及何时确认，将没有意义，如果不希望spring来确认消息，只能在onMessage方法中通过抛出异常的方式。
+        其中“1”表示AUTO_ACKNOWLEDGE,“2”为CLIENT_ACKNOWLEDGE = 2，“3”为 DUPS_OK_ACKNOWLEDGE = 3。-->
+  <!--
+        持久订阅时，客户端向ActiveMQ注册一个识别自己身份的ID，当这个客户端处于离线时，ActiveMQ会为这个ID保存所有发送到主题的消息
+        ，当客户端再次连接到ActiveMQ时，
+        会根据自己的ID得到所有当自己处于离线时发送到主题的消息。持久订阅会增加开销，同一时间在持久订阅中只有一个激活的用户
+        clientId: 对于Topic订阅者而言，此参数必备。
+        subscriptionDurable: 是否为“耐久性”订阅者。在pubSubDomain为true时有效。默认为false。
+        durableSubscriptionName: 耐久订阅者名称，每个clientId下可以有多个耐久订阅者，但是他们必须有不同的名字。默认为className。-->
+      <!--  http://blog.csdn.net/qh_java/article/details/61932295   很详细-->
+
     </bean>
 </beans>
